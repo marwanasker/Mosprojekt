@@ -23,7 +23,7 @@
 			var renderer = new THREE.WebGLRenderer(); // the three.js renderer
 			renderer.setSize( window.innerWidth, window.innerHeight ); //setting the size of the renderer
 			document.body.appendChild( renderer.domElement ); // add a render element to the browser
-			//
+
 
 			//INTERACTIVE WINDOW SIZE
       window.addEventListener('resize', function()
@@ -36,6 +36,8 @@
       })
 			//
 			clock = new THREE.Clock();
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.basicShadowMap;
 
 			function getRadians(){
 				return -0.01;
@@ -53,18 +55,26 @@
 			var backLight = new THREE.DirectionalLight(0xffffff, 1.0);
 			backLight.position.set(100,0,-100).normalize();
 
-			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(234, 153, 91)'),0.2); // soft white light
+			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)') , 0.5); // soft white light
 
-			//scene.add(ambientLight);
-			scene.add(keyLight);
-			scene.add(fillLight);
-			scene.add(backLight);
+			pointLight = new THREE.PointLight(0xffffff,0.8,18);
+			pointLight.position.set(3,3,15);
+			pointLight.castShadow = true;
+			pointLight.shadow.camera.near = 0.1;
+			pointLight.shadow.camera.far = 25;
+
+			scene.add(ambientLight);
+			scene.add(pointLight);
+			//scene.add(keyLight);
+			//scene.add(fillLight);
+			//scene.add(backLight);
 
 			var geometry = new THREE.BoxGeometry( 100, 100, 1 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
-			var material = new THREE.MeshBasicMaterial( { color: 0x630000, wireframe:false } ); // create a material to color the cube
+			var material = new THREE.MeshPhongMaterial( { color: 0x448afc, wireframe:false } ); // create a material to color the cube
 			var cube = new THREE.Mesh( geometry, material ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it
-						cube.translateZ(-50);
-			scene.add( cube ); // add the cube mesh to the scene we will be rendering
+			cube.receiveShadow = true;
+			cube.translateZ(-0.8);
+			scene.add(cube); // add the cube mesh to the scene we will be rendering
 
 			var mtlLoader = new THREE.MTLLoader();
 			mtlLoader.setTexturePath('/assets/');
@@ -76,39 +86,21 @@
 				objLoader.setMaterials(materials);
 				objLoader.setPath('/assets/');
 				objLoader.load('cog2.obj', function(object){
-			//		object.position.y -=60;
+
 				cog = object;
 				cog.rotateZ(1.57079633);
 				cog.rotateX(1.57079633)
+				cog.receiveShadow = true;
+				cog.castShadow = true;
 				scene.add(cog)
 				});
 			});
-
-
-			/*var loader = new THREE.OBJLoader();
-			loader.load(				// load a resource
-				"models/tree.obj", // resource URL
-				function ( object ) { 	// called when resource is loaded
-					scene.add( object );
-				},
-				function( xhr ) { 	// called when loading is in progresses
-					console.log( Math.floor( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-				},
-				function( error ) { // called when loading has errors
-					console.log( 'An error happened' );
-				}
-			);*/
-
 			camera.position.z = 10; // move out in the z-plane so we don't clash with the cube
 
 			var animate = function () { // create a render loop that updates the scene 60 times/sec (where the screen is refreshed)
 				console.log(Math.round(clock.getElapsedTime()));
 
 				requestAnimationFrame( animate ); //requestAnimationFrame is the same as setInterval but with a few advantages, one of them being that it stops when the user navigates to another tab
-			//	cube.rotateX(0.01); // will animate the cube and make it move 0.01 in the x axes every frame (1/60 per sec)
-			//	cube.rotateY(0.01);
-      //  cube.translateX(0.001);
-				//cog.rotateY(-0.001)
 				cog.rotateY(getRadians());
 				renderer.render( scene, camera ); // render the scene
 			};
