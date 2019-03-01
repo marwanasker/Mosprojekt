@@ -11,6 +11,7 @@
     <script src="js/OrbitControls.js"></script>
 		<script src="js/OBJLoader.js"></script>
 		<script src="js/MTLLoader.js"></script>
+		<script src="js/Angle.js"></script>
 		<script>
 			//FRAME RATE TAB
 			(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame
@@ -35,11 +36,6 @@
       })
 			//
 			clock = new THREE.Clock();
-
-
-			function getRadians(){
-				return -0.01;
-			}
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);  // set OrbitControls
 
@@ -90,12 +86,43 @@
 			scene.add(floor); // add the cube mesh to the scene we will be rendering
 			scene.add(wall);
 
+			time = new THREE.Clock();
+			time.start;
+			var lastTime;
+
+			var p1 = new Pendulum(-0.5, 0, 1, 1, 1, 0.04, 1);
+			var c1 = new Cog(0, 0, 1);
+
+			var thisUpdate = 0;
+			var lastUpdate = 0;
+
+			function updateAngle(){
+				thisUpdate = time.getElapsedTime();
+				var numUpdates = Math.floor((thisUpdate - lastUpdate) / h);
+				console.log(numUpdates);
+				lastUpdate = thisUpdate;
+
+
+				for(i = 0; i < numUpdates; i++){
+					p1.update();
+					c1.update(p1.get_impulse_force());
+				}
+
+			};
+
 			camera.position.z = 10; // move out in the z-plane so we don't clash with the cube
 
 			var animate = function () { // create a render loop that updates the scene 60 times/sec (where the screen is refreshed)
-				console.log(Math.round(clock.getElapsedTime()));
+				//console.log(Math.round(clock.getElapsedTime()));
 				requestAnimationFrame( animate ); //requestAnimationFrame is the same as setInterval but with a few advantages, one of them being that it stops when the user navigates to another tab
-				cog.rotateY(getRadians());
+
+				var prevCogAngle = c1.angle;
+				updateAngle();
+				var newAngle = c1.angle - prevCogAngle;
+				console.log(newAngle);
+
+				cog.rotateY(-newAngle);
+
 				renderer.render( scene, camera ); // render the scene
 			};
 
