@@ -13,7 +13,7 @@
 		<script src="js/MTLLoader.js"></script>
 		<script src="js/Angle.js"></script>
 		<script>
-<<<<<<< HEAD
+
 			(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame
 				(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
 
@@ -131,7 +131,7 @@
 
 					p1.update();
 
-					if(Math.abs(p1.angle < 0.2)) {
+					if(Math.abs(p1.angle < 0.4)) {
 						c1.velocity = c1.acceleration = 0;
 					}
 					else {
@@ -156,9 +156,11 @@
 
 				var prevCogAngle = c1.angle;
 				updateAngle();
-				var newAngle = c1.angle - prevCogAngle;
+				var newCogAngle = c1.angle - prevCogAngle;
+				var newPenAngle = p1.angle - prevPenAngle;
 
-				cog.rotateY(-newAngle);
+				cog.rotateY(-newCogAngle);
+				anchor.rotateY(newPenAngle);
 
 				renderer.render( scene, camera ); // render the scene
 			};
