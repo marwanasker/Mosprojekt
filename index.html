@@ -49,11 +49,15 @@
 			scene.add(ambientLight);
 			scene.add(directLight);
 
+
 			var mtlLoaderCog = new THREE.MTLLoader();
 			var mtlLoaderAnchor = new THREE.MTLLoader();
+			var mtlLoaderPend = new THREE.MTLLoader();
 			var objLoaderAnchor = new THREE.OBJLoader();
 			var objLoaderCog = new THREE.OBJLoader();
+			var objLoaderPend = new THREE.OBJLoader();
 
+ //Anchor object & materials
 			mtlLoaderAnchor.setTexturePath('/assets/');
 			mtlLoaderAnchor.setPath('/assets/');
 			mtlLoaderAnchor.load('hook4.mtl', function(anchorMaterials) {
@@ -70,6 +74,7 @@
 				});
 			});
 
+ //Cog object & materials
 			mtlLoaderCog.setTexturePath('/assets/');
 			mtlLoaderCog.setPath('/assets/');
 			mtlLoaderCog.load('cog2.mtl', function(cogMaterials) {
@@ -92,6 +97,23 @@
 				});
 			});
 
+ //Pendulum object & materials
+			mtlLoaderPend.setTexturePath('/assets/');
+			mtlLoaderPend.setPath('/assets/');
+			mtlLoaderPend.load('pendulum.mtl', function(pendMaterials) {
+
+				pendMaterials.preload();
+				objLoaderPend.setMaterials(pendMaterials);
+				objLoaderPend.setPath('/assets/');
+				objLoaderPend.load('pendulum.obj', function(pendObject) {
+						pend = pendObject;
+						pend.translateZ(4);
+						scene.add(pend);
+
+				});
+			});
+
+//Floor and wall geometry
 			var floorGeometry = new THREE.PlaneBufferGeometry( 30, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
 			var floorMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } ); // create a material to color the cube
 			var floor = new THREE.Mesh( floorGeometry, floorMaterial ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it/
