@@ -6,12 +6,13 @@
 			canvas { width: 100%; height: 100% }
 		</style>
 	</head>
-	<body>
+	<body onload="init()">
 		<script src="js/three.js"></script>
     <script src="js/OrbitControls.js"></script>
 		<script src="js/OBJLoader.js"></script>
 		<script src="js/MTLLoader.js"></script>
 		<script src="js/Angle.js"></script>
+		<script src="js/svgPlot.js"></script>
 		<script>
 			//FRAME RATE TAB
 			(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame
@@ -120,6 +121,8 @@
 				updateAngle();
 				var newAngle = c1.angle - prevCogAngle;
 				console.log(newAngle);
+				pushPlot(c1.velocity, cogPlot, plotMaxValues); //Add value to the array for the plot
+				plotArray(plot, cogPlot, green); //Plot the array
 
 				cog.rotateY(-newAngle);
 
@@ -128,5 +131,6 @@
 
 			animate(); // call the render loop
 		</script>
+		<svg id="plot" height="300" width="500" style="z-index:20000; position: absolute; right:0; bottom:0; background-color: rgba(0,0,0,0.2);"></svg>
 	</body>
 </html>
