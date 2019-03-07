@@ -1,5 +1,6 @@
 var g = 9.82;     // Gravitation
 var h = 0.01;     // Step length
+var contactAngle = 0.042;
 
 class Pendulum
 {
@@ -10,7 +11,7 @@ class Pendulum
     this.length = length;
     this.mass = mass;
     this.length_mass = length_mass;
-    this.friction = friction;
+    this.friction = -friction; //Teckenfel
     this.inertia = inertia;
     this.update = this.update.bind(this);
   }
@@ -22,8 +23,8 @@ class Pendulum
   }
 
   get impulse_force(){
-    if ((this.velocity*this.angle < 0) && (Math.abs(this.angle > 0.4))){
-      return 0.495; //Magic number
+    if ((this.velocity*this.angle) < 0 && Math.abs(this.angle) > contactAngle){
+      return -0.035; //Magic number, teckenfel
     }
     else {
       return 0;
@@ -48,7 +49,7 @@ class Cog
   }
 
   update(impulse_force){
-    this.acceleration = (0.5 - impulse_force/this.inertia);
+    this.acceleration = (1.8 - impulse_force/this.inertia);
     this.velocity = euler(this.velocity, this.acceleration, h);
     this.angle = euler(this.angle, this.velocity, h);
   }
@@ -66,6 +67,13 @@ if (!Array.prototype.last){
         return this[this.length - 1];
     };
 };
+
+function modulus(a, b) {
+  while (a > b) {
+    a = a - b;
+  }
+  return Math.abs(a);
+}
 
 /*
 var p1 = new Pendulum(-0.5, 0, 1, 1, 1, 0.04, 1);

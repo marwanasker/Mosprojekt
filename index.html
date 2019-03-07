@@ -19,7 +19,7 @@
 
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 ); //(fov, aspect ratio,near clipping plane,far clipping plane)
-			var renderer = new THREE.WebGLRenderer(); // the three.js renderer
+			var renderer = new THREE.WebGLRenderer({ antialias: true }); // the three.js renderer
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 			renderer.setSize( window.innerWidth, window.innerHeight ); //setting the size of the renderer
@@ -63,7 +63,7 @@
 				objLoaderAnchor.setPath('/assets/');
 				objLoaderAnchor.load('anchor.obj', function(AnchorObject) {
 						anchor = AnchorObject;
-						anchor.translateY(1.45);
+						anchor.translateY(1.52);
 						anchor.translateZ(1.98);
 						anchor.rotateX(1.57079633);
 						scene.add(AnchorObject);
@@ -109,7 +109,7 @@
 			time.start;
 			var lastTime;
 
-			var p1 = new Pendulum(-0.5, 0, 1, 1, 1, 0.04, 1);
+			var p1 = new Pendulum(-0.1, 0, 1, 1, 1, 0.04, 1);
 			var c1 = new Cog(0, 0, 1);
 
 			var thisUpdate = 0;
@@ -117,6 +117,10 @@
 
 			var memberberry = 0;
 			var prevPenAngle = p1.angle;
+
+			const teethAngle = Math.PI / 60;
+			var localAngle = 0;
+			var prevCogAngle = c1.angle;
 
 			function updateAngle(){
 				thisUpdate = time.getElapsedTime();
@@ -131,13 +135,21 @@
 
 					p1.update();
 
-					if(Math.abs(p1.angle < 0.4)) {
+					var offset = 0.04; //Förskjuter var kugghjulet stannar varje tick
+					if(modulus(c1.angle + offset, Math.PI/30) < 0.05 && Math.abs(p1.angle) > contactAngle) {
 						c1.velocity = c1.acceleration = 0;
 					}
 					else {
+						if(localAngle > teethAngle){
+							localAngle = 0;
+						}
+
+						prevCogAngle = c1.angle;
 						c1.update(p1.get_impulse_force());
+						localAngle = localAngle + c1.angle - prevCogAngle;
 					}
 
+					//Logga vändpunkt på pendeln
 					if(p1.angle > 0 && p1.angle < prevPenAngle && prevPenAngle > memberberry){
 						console.log(p1.angle);
 					}
@@ -154,13 +166,9 @@
 				//console.log(Math.round(clock.getElapsedTime()));
 				requestAnimationFrame( animate ); //requestAnimationFrame is the same as setInterval but with a few advantages, one of them being that it stops when the user navigates to another tab
 
-				var prevCogAngle = c1.angle;
 				updateAngle();
-				var newCogAngle = c1.angle - prevCogAngle;
-				var newPenAngle = p1.angle - prevPenAngle;
-
-				cog.rotateY(-newCogAngle);
-				anchor.rotateY(newPenAngle);
+				cog.rotation.y = -c1.angle;
+				anchor.rotation.y = p1.angle;
 
 				renderer.render( scene, camera ); // render the scene
 			};
