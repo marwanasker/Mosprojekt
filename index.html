@@ -11,6 +11,7 @@
     <script src="js/OrbitControls.js"></script>
 		<script src="js/OBJLoader.js"></script>
 		<script src="js/MTLLoader.js"></script>
+		<script src="js/Angle.js"></script>
 		<script>
 			//FRAME RATE TAB
 			(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame
@@ -19,9 +20,10 @@
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 ); //(fov, aspect ratio,near clipping plane,far clipping plane)
 			var renderer = new THREE.WebGLRenderer(); // the three.js renderer
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 			renderer.setSize( window.innerWidth, window.innerHeight ); //setting the size of the renderer
 			document.body.appendChild( renderer.domElement ); // add a render element to the browser
-
 
 			//INTERACTIVE WINDOW SIZE
       window.addEventListener('resize', function()
@@ -34,45 +36,22 @@
       })
 			//
 			clock = new THREE.Clock();
-			renderer.shadowMap.enabled = true;
-			renderer.shadowMap.type = THREE.basicShadowMap;
-
-			function getRadians(){
-				return -0.01;
-			}
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);  // set OrbitControls
 
 			// add lightningt to the scene: hsl= hue/satuaration/lightness/level
-			var keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 100%, 75%)'),1.0);
-			keyLight.position.set(-100,0,100); //change posistion of the light source
+			var skyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 100%, 75%)'),1.0);
+			skyLight.position.set(-200,100,100); //change posistion of the light source
 
-			var fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'),0.75);
-			fillLight.position.set(100,0,100);
-
-			var backLight = new THREE.DirectionalLight(0xffffff, 1.0);
-			backLight.position.set(100,0,-100).normalize();
+			var directLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'),0.3, 0 ,Math.PI/2., 0, 2);
+			directLight.position.set(100,50,100);
+			directLight.castShadow = true;
 
 			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)') , 0.5); // soft white light
 
-			pointLight = new THREE.PointLight(0xffffff,0.8,18);
-			pointLight.position.set(3,3,15);
-			pointLight.castShadow = true;
-			pointLight.shadow.camera.near = 0.1;
-			pointLight.shadow.camera.far = 25;
-
-			scene.add(ambientLight);
-			scene.add(pointLight);
-			//scene.add(keyLight);
-			//scene.add(fillLight);
-			//scene.add(backLight);
-
-			var geometry = new THREE.BoxGeometry( 100, 100, 1 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
-			var material = new THREE.MeshPhongMaterial( { color: 0x448afc, wireframe:false } ); // create a material to color the cube
-			var cube = new THREE.Mesh( geometry, material ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it
-			cube.receiveShadow = true;
-			cube.translateZ(-0.8);
-			scene.add(cube); // add the cube mesh to the scene we will be rendering
+			//scene.add(ambientLight);
+			scene.add(skyLight);
+			scene.add(directLight);
 
 			var mtlLoader = new THREE.MTLLoader();
 			mtlLoader.setTexturePath('/assets/');
@@ -87,19 +66,81 @@
 
 				cog = object;
 				cog.rotateZ(1.57079633);
-				cog.rotateX(1.57079633)
-				cog.receiveShadow = true;
-				cog.castShadow = true;
+				cog.rotateX(1.57079633);
+				cog.translateY(2);
+				cog.traverse( function (child){if (child instanceof THREE.Mesh){child.castShadow = true;}}); //shadow
 				scene.add(cog)
 				});
-			});
+		 });
+
+			var floorGeometry = new THREE.PlaneBufferGeometry( 30, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
+			var floorMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } ); // create a material to color the cube
+			var floor = new THREE.Mesh( floorGeometry, floorMaterial ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it/
+			var wallGeometry = new THREE.PlaneBufferGeometry(30, 30, 32, 32);
+			var wallMaterial = new THREE.MeshStandardMaterial ({color: 0x00ff00 });
+			var wall = new THREE.Mesh(wallGeometry, wallMaterial);
+			floor.rotateX(30);
+			floor.translateZ(-10);
+			floor.receiveShadow = true;
+			wall.receiveShadow = true;
+			scene.add(floor); // add the cube mesh to the scene we will be rendering
+			scene.add(wall);
+
+			time = new THREE.Clock();
+			time.start;
+			var lastTime;
+
+			var p1 = new Pendulum(-0.5, 0, 1, 1, 1, 0.04, 1);
+			var c1 = new Cog(0, 0, 1);
+
+			var thisUpdate = 0;
+			var lastUpdate = 0;
+
+			var memberberry = 0;
+			var prevPenAngle = p1.angle;
+
+			function updateAngle(){
+				thisUpdate = time.getElapsedTime();
+				var numUpdates = Math.floor((thisUpdate - lastUpdate) / h);
+				//console.log(numUpdates);
+				lastUpdate = thisUpdate;
+
+
+				for(i = 0; i < numUpdates; i++){
+					memberberry = prevPenAngle;
+					prevPenAngle = p1.angle;
+
+					p1.update();
+
+					if(Math.abs(p1.angle < 0.2)) {
+						c1.velocity = c1.acceleration = 0;
+					}
+					else {
+						c1.update(p1.get_impulse_force());
+					}
+					
+					if(p1.angle > 0 && p1.angle < prevPenAngle && prevPenAngle > memberberry){
+						console.log(p1.angle);
+					}
+					if(p1.angle < 0 && p1.angle > prevPenAngle && prevPenAngle < memberberry){
+						console.log(p1.angle);
+					}
+				}
+
+			};
+
 			camera.position.z = 10; // move out in the z-plane so we don't clash with the cube
 
 			var animate = function () { // create a render loop that updates the scene 60 times/sec (where the screen is refreshed)
-				console.log(Math.round(clock.getElapsedTime()));
-
+				//console.log(Math.round(clock.getElapsedTime()));
 				requestAnimationFrame( animate ); //requestAnimationFrame is the same as setInterval but with a few advantages, one of them being that it stops when the user navigates to another tab
-				cog.rotateY(getRadians());
+
+				var prevCogAngle = c1.angle;
+				updateAngle();
+				var newAngle = c1.angle - prevCogAngle;
+
+				cog.rotateY(-newAngle);
+
 				renderer.render( scene, camera ); // render the scene
 			};
 
