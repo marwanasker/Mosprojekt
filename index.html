@@ -41,11 +41,11 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);  // set OrbitControls
 
 			// add lightningt to the scene: hsl= hue/satuaration/lightness/level
-			var directLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'), 0.3, 0, Math.PI / 2., 0, 2);
+			var directLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'), 0.6, 0, Math.PI / 2., 0, 2);
 			directLight.position.set(0, 100, 200);
 			directLight.castShadow = true;
 
-			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.5); // soft white light
+			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.15); // soft white light
 
 			scene.add(ambientLight);
 			scene.add(directLight);
@@ -57,6 +57,8 @@
 			var objLoaderAnchor = new THREE.OBJLoader();
 			var objLoaderCog = new THREE.OBJLoader();
 			var objLoaderPend = new THREE.OBJLoader();
+
+
 
  //Anchor object & materials
 			mtlLoaderAnchor.setTexturePath('/assets/');
@@ -148,7 +150,7 @@
 			scene.add(floor); // add the cube mesh to the scene we will be rendering
 			scene.add(wall);
 
-	//Painting geometry
+	//Painting1 geometry
 		var paintingGeometry = new THREE.PlaneBufferGeometry( 4, 5 );
 		var paintingTexture = new THREE.TextureLoader().load( "assets/painting1.jpg" );
 		var paintingMaterial = new THREE.MeshLambertMaterial({ map : paintingTexture });
@@ -157,6 +159,17 @@
 		painting.translateZ(0.01);
 		painting.translateY(2);
 		painting.translateX(-6);
+
+	//Painting2 geometry
+	var painting2Geometry = new THREE.PlaneGeometry(3.3, 4);
+	var painting2Texture = new THREE.TextureLoader().load( "assets/painting2.png" );
+	var painting2Alpha = new THREE.TextureLoader().load( "assets/painting2_alpha.png" );
+	var painting2Material = new THREE.MeshLambertMaterial({ map : painting2Texture, painting2Alpha : faceAlpha, transparent : true });
+	var	painting2= new THREE.Mesh( painting2Geometry, painting2Material );
+	scene.add(painting2);
+	painting2.translateZ(0.01);
+	painting2.translateY(-2);
+	painting2.translateX(8);
 
 
 	//Start doing calculations
