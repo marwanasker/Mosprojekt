@@ -68,7 +68,7 @@
 				objLoaderAnchor.setPath('/assets/');
 				objLoaderAnchor.load('anchor.obj', function(AnchorObject) {
 						anchor = AnchorObject;
-						anchor.translateY(1.52);
+						anchor.translateY(1.45947);
 						anchor.translateZ(1.98);
 						anchor.rotateX(1.57079633);
 						anchor.traverse(function(child) {
@@ -116,7 +116,7 @@
 						pend.translateZ(1.8);
 						pend.translateY(1.5);
 						pend.scale.set(0.6, 0.6, 0.6);
-						scene.add(pend);
+						//scene.add(pend);
 
 				});
 			});
@@ -190,7 +190,7 @@
 
 					p1.update();
 
-					var offset = 0.04; //Förskjuter var kugghjulet stannar varje tick
+					var offset = 0.0666; //Förskjuter var kugghjulet stannar varje tick
 					if(modulus(c1.angle + offset, Math.PI/30) < 0.05 && Math.abs(p1.angle) > contactAngle) {
 						c1.velocity = c1.acceleration = 0;
 					}
@@ -224,7 +224,7 @@
 				updateAngle();
 				cog.rotation.y = -c1.angle;
 				anchor.rotation.y = p1.angle;
-				pend.rotation.z = p1.angle;
+				//pend.rotation.z = p1.angle;
 
 				pushPlot(c1.velocity, cogPlot, plotMaxValues); //Add value to the array for the plot
 				plotArray(plot, cogPlot, green); //Plot the array
