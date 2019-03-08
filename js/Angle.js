@@ -1,6 +1,6 @@
 var g = 9.82;     // Gravitation
 var h = 0.01;     // Step length
-var contactAngle = 0.042;
+var contactAngle = 0.045;
 
 class Pendulum
 {
@@ -10,31 +10,33 @@ class Pendulum
     this.acceleration = 0;
     this.length = length;
     this.mass = mass;
-    this.length_mass = length_mass;
-    this.friction = -friction; //Teckenfel
+    this.length_mass = length_mass; //Length to the center of mass
+    this.friction = friction; //Teckenfel
     this.inertia = inertia;
+
     this.update = this.update.bind(this);
+    this.get_impulse_force = this.get_impulse_force.bind(this);
   }
 
-  update(){
-    this.acceleration = -(g/this.length*Math.sin(this.angle) - this.friction*this.velocity + Math.sign(this.velocity)*this.impulse_force/this.inertia);
+  update(cog_acceleration){
+    var gravity_torque = -g*this.mass*Math.sin(this.angle)*this.length_mass;
+    var friction_torque = this.friction*this.velocity;
+    var impulse_torque = Math.sign(this.velocity)*this.get_impulse_force(cog_acceleration);
+    this.acceleration = (gravity_torque - friction_torque + impulse_torque)/this.inertia;
+    //this.acceleration = -(g/this.length*Math.sin(this.angle) - this.friction*this.velocity + Math.sign(this.velocity)*this.impulse_force/this.inertia);
     this.velocity = euler(this.velocity, this.acceleration, h);
     this.angle = euler(this.angle, this.velocity, h);
   }
 
-  get impulse_force(){
+  get_impulse_force(cog_acceleration){
     if ((this.velocity*this.angle) < 0 && Math.abs(this.angle) > contactAngle){
-      return -0.035; //Magic number, teckenfel
+      var c = 0.05;
+      return c*cog_acceleration;
     }
     else {
       return 0;
     }
   }
-
-  get_impulse_force(){
-    return this.impulse_force;
-  }
-
 }
 
 class Cog
@@ -48,8 +50,8 @@ class Cog
     this.update = this.update.bind(this);
   }
 
-  update(impulse_force){
-    this.acceleration = (1.8 - impulse_force/this.inertia);
+  update(mass_torque){
+    this.acceleration = mass_torque/this.inertia; //We do not account for impulse_force since it is applied almost paralell to the radius
     this.velocity = euler(this.velocity, this.acceleration, h);
     this.angle = euler(this.angle, this.velocity, h);
   }
@@ -73,6 +75,27 @@ function modulus(a, b) {
     a = a - b;
   }
   return Math.abs(a);
+}
+
+class Mass {
+  constructor(m, y0, r, floorY) {
+    this.m = m;           //Mass
+    this.y0 = y0;         //Starting position
+    this.y = y0;          //Current position
+    this.r = r;           //Radius of the spool
+    this.floorY = floorY; //Position of the floor
+    this.torque = 0;
+    this.update = this.update.bind(this);
+  }
+
+  update(ang){
+    if (this.y > this.floorY) {
+      this.y = this.y0 - ang*this.r;
+      this.torque = g*this.m*this.r;
+    } else {
+      this.torque = 0;
+    }
+  }
 }
 
 /*
