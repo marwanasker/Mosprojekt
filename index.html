@@ -41,11 +41,11 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);  // set OrbitControls
 
 			// add lightningt to the scene: hsl= hue/satuaration/lightness/level
-			var directLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'), 0.3, 0, Math.PI / 2., 0, 2);
+			var directLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'), 0.6, 0, Math.PI / 2., 0, 2);
 			directLight.position.set(0, 100, 200);
 			directLight.castShadow = true;
 
-			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.5); // soft white light
+			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.15); // soft white light
 
 			scene.add(ambientLight);
 			scene.add(directLight);
@@ -57,6 +57,8 @@
 			var objLoaderAnchor = new THREE.OBJLoader();
 			var objLoaderCog = new THREE.OBJLoader();
 			var objLoaderPend = new THREE.OBJLoader();
+
+
 
  //Anchor object & materials
 			mtlLoaderAnchor.setTexturePath('/assets/');
@@ -121,6 +123,14 @@
 				});
 			});
 
+//Mass object & materials
+		var massGeometry = new THREE.CylinderGeometry( 0.15, 0.15, 1.5, 32 );
+		var massMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+		var mass = new THREE.Mesh( massGeometry, massMaterial );
+		scene.add( mass );
+		mass.translateZ(1.9);
+		mass.translateX(0.3);
+
 //Watch face
 		var faceGeometry = new THREE.PlaneGeometry(1.75, 1.75);
 		var faceTexture = new THREE.TextureLoader().load( "assets/urtavla.png" );
@@ -132,8 +142,13 @@
 
 //Floor and wall geometry
 			var floorGeometry = new THREE.PlaneBufferGeometry( 30, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
-			var floorMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } ); // create a material to color the cube
+			var floorTexture = new THREE.TextureLoader().load( "assets/wood_floor.jpg" );
+			var floorMaterial = new THREE.MeshLambertMaterial({ map : floorTexture }); // create a material to color the cube
+				floorTexture.wrapS = THREE.RepeatWrapping;
+				floorTexture.wrapT = THREE.RepeatWrapping;
+				floorTexture.repeat.set( 7, 8 );
 			var floor = new THREE.Mesh( floorGeometry, floorMaterial ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it/
+
 			var wallGeometry = new THREE.PlaneBufferGeometry(30, 30, 32, 32);
 			var wallTexture = new THREE.TextureLoader().load( "assets/victorian_wallpaper.jpg" );
 				wallTexture.wrapS = THREE.RepeatWrapping;
@@ -141,19 +156,56 @@
 				wallTexture.repeat.set( 14, 16 );
 			var wallMaterial = new THREE.MeshLambertMaterial({ map : wallTexture });
 			var wall = new THREE.Mesh(wallGeometry, wallMaterial);
-			floor.rotateX(30);
-			floor.translateZ(-10);
+			floor.rotateX(-Math.PI/2);
+			floor.translateZ(-5);
+			floor.translateY(-0.85);
 			floor.receiveShadow = true;
 			wall.receiveShadow = true;
 			scene.add(floor); // add the cube mesh to the scene we will be rendering
 			scene.add(wall);
 
+	//Moulding geometry
+		var mouldingGeometry = new THREE.PlaneBufferGeometry(30, 1);
+		var mouldingTexture = new THREE.TextureLoader().load( "assets/moulding.jpg" );
+		var mouldingMaterial = new THREE.MeshLambertMaterial({ map : mouldingTexture });
+			mouldingTexture.wrapS = THREE.RepeatWrapping;
+			mouldingTexture.wrapT = THREE.RepeatWrapping;
+			mouldingTexture.repeat.set( 16, 1 );
+		var moulding = new THREE.Mesh(mouldingGeometry, mouldingMaterial);
+		scene.add(moulding);
+		moulding.translateZ(0.01);
+		moulding.translateY(-4.6);
+
+	//Painting geometry
+		var paintingGeometry = new THREE.PlaneBufferGeometry( 4, 5 );
+		var paintingTexture = new THREE.TextureLoader().load( "assets/painting1.jpg" );
+		var paintingMaterial = new THREE.MeshLambertMaterial({ map : paintingTexture });
+		var painting = new THREE.Mesh(paintingGeometry, paintingMaterial);
+		scene.add(painting);
+		painting.translateZ(0.01);
+		painting.translateY(2);
+		painting.translateX(-6);
+
+	//Painting2 geometry
+	var painting2Geometry = new THREE.PlaneGeometry(3.3, 4);
+	var painting2Texture = new THREE.TextureLoader().load( "assets/painting2.png" );
+	var painting2Alpha = new THREE.TextureLoader().load( "assets/painting2_alpha.png" );
+	var painting2Material = new THREE.MeshLambertMaterial({ map : painting2Texture, painting2Alpha : faceAlpha, transparent : true });
+	var	painting2= new THREE.Mesh( painting2Geometry, painting2Material );
+	scene.add(painting2);
+	painting2.translateZ(0.01);
+	painting2.translateY(-2);
+	painting2.translateX(8);
+
+
+	//Start doing calculations
 			time = new THREE.Clock();
 			time.start;
 			var lastTime;
 
-			var p1 = new Pendulum(-0.1, 0, 1, 1, 1, 0.04, 1);
+			var p1 = new Pendulum(-0.1, 0, 1, 10, 1, 0.04, 10);
 			var c1 = new Cog(0, 0, 1);
+			var m1 = new Mass(0.11, -2, 1, -5);
 
 			var thisUpdate = 0;
 			var lastUpdate = 0;
@@ -176,7 +228,7 @@
 					memberberry = prevPenAngle;
 					prevPenAngle = p1.angle;
 
-					p1.update();
+					p1.update(c1.acceleration);
 
 					var offset = 0.0666; //Förskjuter var kugghjulet stannar varje tick
 					if(modulus(c1.angle + offset, Math.PI/30) < 0.05 && Math.abs(p1.angle) > contactAngle) {
@@ -188,7 +240,7 @@
 						}
 
 						prevCogAngle = c1.angle;
-						c1.update(p1.get_impulse_force());
+						c1.update(m1.torque);
 						localAngle = localAngle + c1.angle - prevCogAngle;
 					}
 
@@ -199,6 +251,8 @@
 					if(p1.angle < 0 && p1.angle > prevPenAngle && prevPenAngle < memberberry){
 						//console.log(p1.angle);
 					}
+
+					m1.update(c1.angle);
 				}
 
 			};
@@ -213,6 +267,7 @@
 				cog.rotation.y = -c1.angle;
 				anchor.rotation.y = p1.angle;
 				//pend.rotation.z = p1.angle;
+				mass.position.y = m1.y;
 
 				pushPlot(c1.velocity, cogPlot, plotMaxValues); //Add value to the array for the plot
 				plotArray(plot, cogPlot, green); //Plot the array
