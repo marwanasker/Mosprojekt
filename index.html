@@ -54,10 +54,11 @@
 			var mtlLoaderCog = new THREE.MTLLoader();
 			var mtlLoaderAnchor = new THREE.MTLLoader();
 			var mtlLoaderPend = new THREE.MTLLoader();
+			var mtlLoaderHand = new THREE.MTLLoader();
 			var objLoaderAnchor = new THREE.OBJLoader();
 			var objLoaderCog = new THREE.OBJLoader();
 			var objLoaderPend = new THREE.OBJLoader();
-
+			var objLoaderHand = new THREE.OBJLoader();
 
 
  //Anchor object & materials
@@ -123,6 +124,23 @@
 				});
 			});
 
+		//Hand object & materials
+ 				mtlLoaderPend.setTexturePath('/assets/');
+ 				mtlLoaderPend.setPath('/assets/');
+ 				mtlLoaderPend.load('visare.mtl', function(handMaterials) {
+
+ 				  handMaterials.preload();
+ 					objLoaderHand.setMaterials(handMaterials);
+ 					objLoaderHand.setPath('/assets/');
+ 					objLoaderHand.load('visare.obj', function(handObject) {
+ 							hand = handObject;
+ 							hand.translateZ(2.02);
+ 							hand.scale.set(0.1, 0.1, 0.1);
+ 							scene.add(hand);
+
+ 					});
+ 				});
+
 //Mass object & materials
 		var massGeometry = new THREE.CylinderGeometry( 0.15, 0.15, 1.5, 32 );
 		var massMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
@@ -187,14 +205,14 @@
 		painting.translateX(-6);
 
 	//Painting2 geometry
-	var painting2Geometry = new THREE.PlaneGeometry(3.3, 4);
+	var painting2Geometry = new THREE.PlaneGeometry(3.2, 4);
 	var painting2Texture = new THREE.TextureLoader().load( "assets/painting2.png" );
 	var painting2Alpha = new THREE.TextureLoader().load( "assets/painting2_alpha.png" );
 	var painting2Material = new THREE.MeshLambertMaterial({ map : painting2Texture, painting2Alpha : faceAlpha, transparent : true });
 	var	painting2= new THREE.Mesh( painting2Geometry, painting2Material );
 	scene.add(painting2);
 	painting2.translateZ(0.01);
-	painting2.translateY(-2);
+	painting2.translateY(-1);
 	painting2.translateX(8);
 
 
@@ -204,8 +222,8 @@
 			var lastTime;
 
 			var p1 = new Pendulum(-0.1, 0, 1, 10, 1, 0.04, 10);
-			var c1 = new Cog(0, 0, 1);
-			var m1 = new Mass(0.11, -2, 1, -5);
+			var c1 = new Cog(0, 0, 0.8);
+			var m1 = new Mass(1, -2, 0.11, -4.2);
 
 			var thisUpdate = 0;
 			var lastUpdate = 0;
@@ -268,6 +286,7 @@
 				anchor.rotation.y = p1.angle;
 				//pend.rotation.z = p1.angle;
 				mass.position.y = m1.y;
+				hand.rotation.z = -c1.angle + 0.045;
 
 				pushPlot(c1.velocity, cogPlot, plotMaxValues); //Add value to the array for the plot
 				plotArray(plot, cogPlot, green); //Plot the array
