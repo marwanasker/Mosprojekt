@@ -107,7 +107,9 @@
 				objLoaderPend.setPath('/assets/');
 				objLoaderPend.load('pendulum.obj', function(pendObject) {
 						pend = pendObject;
-						pend.translateZ(4);
+						pend.translateZ(1.8);
+						pend.translateY(1.5);
+						pend.scale.set(0.6, 0.6, 0.6);
 						scene.add(pend);
 
 				});
@@ -191,6 +193,7 @@
 				updateAngle();
 				cog.rotation.y = -c1.angle;
 				anchor.rotation.y = p1.angle;
+				pend.rotation.z = p1.angle;
 
 				renderer.render( scene, camera ); // render the scene
 			};
