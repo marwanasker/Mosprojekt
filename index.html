@@ -148,6 +148,18 @@
 			scene.add(floor); // add the cube mesh to the scene we will be rendering
 			scene.add(wall);
 
+	//Painting geometry
+		var paintingGeometry = new THREE.PlaneBufferGeometry( 4, 5 );
+		var paintingTexture = new THREE.TextureLoader().load( "assets/painting1.jpg" );
+		var paintingMaterial = new THREE.MeshLambertMaterial({ map : paintingTexture });
+		var painting = new THREE.Mesh(paintingGeometry, paintingMaterial);
+		scene.add(painting);
+		painting.translateZ(0.01);
+		painting.translateY(2);
+		painting.translateX(-6);
+
+
+	//Start doing calculations
 			time = new THREE.Clock();
 			time.start;
 			var lastTime;
