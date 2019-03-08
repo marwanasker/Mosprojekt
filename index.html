@@ -121,12 +121,25 @@
 				});
 			});
 
+//Watch face
+		var faceGeometry = new THREE.PlaneGeometry(1.75, 1.75);
+		var faceTexture = new THREE.TextureLoader().load( "assets/urtavla.png" );
+		var faceAlpha = new THREE.TextureLoader().load( "assets/urtavla_alpha.png" );
+		var faceMaterial = new THREE.MeshLambertMaterial({ map : faceTexture, alphaMap : faceAlpha, transparent : true });
+		var watchFace = new THREE.Mesh( faceGeometry, faceMaterial );
+		scene.add(watchFace);
+		watchFace.translateZ(2.01);
+
 //Floor and wall geometry
 			var floorGeometry = new THREE.PlaneBufferGeometry( 30, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
 			var floorMaterial = new THREE.MeshStandardMaterial( { color: 0x00ff00 } ); // create a material to color the cube
 			var floor = new THREE.Mesh( floorGeometry, floorMaterial ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it/
 			var wallGeometry = new THREE.PlaneBufferGeometry(30, 30, 32, 32);
-			var wallMaterial = new THREE.MeshStandardMaterial ({color: 0x00ff00 });
+			var wallTexture = new THREE.TextureLoader().load( "assets/victorian_wallpaper.jpg" );
+				wallTexture.wrapS = THREE.RepeatWrapping;
+				wallTexture.wrapT = THREE.RepeatWrapping;
+				wallTexture.repeat.set( 14, 16 );
+			var wallMaterial = new THREE.MeshLambertMaterial({ map : wallTexture });
 			var wall = new THREE.Mesh(wallGeometry, wallMaterial);
 			floor.rotateX(30);
 			floor.translateZ(-10);
