@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>My first three.js app</title>
+		<title>Pendulum Clock</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
@@ -109,17 +109,22 @@
  //Pendulum object & materials
 			mtlLoaderPend.setTexturePath('/assets/');
 			mtlLoaderPend.setPath('/assets/');
-			mtlLoaderPend.load('pendulum.mtl', function(pendMaterials) {
+			mtlLoaderPend.load('pendel.mtl', function(pendMaterials) {
 
 				pendMaterials.preload();
 				objLoaderPend.setMaterials(pendMaterials);
 				objLoaderPend.setPath('/assets/');
-				objLoaderPend.load('pendulum.obj', function(pendObject) {
+				objLoaderPend.load('pendel.obj', function(pendObject) {
 						pend = pendObject;
 						pend.translateZ(1.8);
 						pend.translateY(1.5);
 						pend.scale.set(0.6, 0.6, 0.6);
-						//scene.add(pend);
+						pend.traverse(function(child) {
+								if (child instanceof THREE.Mesh) {
+										child.castShadow = true;
+								}
+						}); //shadow
+						scene.add(pend);
 
 				});
 			});
@@ -142,11 +147,11 @@
  				});
 
 //Mass object & materials
-		var massGeometry = new THREE.CylinderGeometry( 0.15, 0.15, 1.5, 32 );
-		var massMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+		var massGeometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.8, 32 );
+		var massMaterial = new THREE.MeshBasicMaterial( {color: 0xc0c0c0} );
 		var mass = new THREE.Mesh( massGeometry, massMaterial );
 		scene.add( mass );
-		mass.translateZ(1.9);
+		mass.translateZ(1.5);
 		mass.translateX(0.3);
 
 //Watch face
@@ -175,7 +180,7 @@
 			var wallMaterial = new THREE.MeshLambertMaterial({ map : wallTexture });
 			var wall = new THREE.Mesh(wallGeometry, wallMaterial);
 			floor.rotateX(-Math.PI/2);
-			floor.translateZ(-5);
+			floor.translateZ(-7);
 			floor.translateY(-0.85);
 			floor.receiveShadow = true;
 			wall.receiveShadow = true;
@@ -192,7 +197,7 @@
 		var moulding = new THREE.Mesh(mouldingGeometry, mouldingMaterial);
 		scene.add(moulding);
 		moulding.translateZ(0.01);
-		moulding.translateY(-4.6);
+		moulding.translateY(-6.6);
 
 	//Painting geometry
 		var paintingGeometry = new THREE.PlaneBufferGeometry( 4, 5 );
@@ -202,7 +207,7 @@
 		scene.add(painting);
 		painting.translateZ(0.01);
 		painting.translateY(2);
-		painting.translateX(-6);
+		painting.translateX(-7);
 
 	//Painting2 geometry
 	var painting2Geometry = new THREE.PlaneGeometry(3.2, 4);
@@ -212,8 +217,8 @@
 	var	painting2= new THREE.Mesh( painting2Geometry, painting2Material );
 	scene.add(painting2);
 	painting2.translateZ(0.01);
-	painting2.translateY(-1);
-	painting2.translateX(8);
+	painting2.translateY(1.75);
+	painting2.translateX(7);
 
 
 	//Start doing calculations
@@ -284,7 +289,7 @@
 				updateAngle();
 				cog.rotation.y = -c1.angle;
 				anchor.rotation.y = p1.angle;
-				//pend.rotation.z = p1.angle;
+				pend.rotation.z = p1.angle;
 				mass.position.y = m1.y;
 				hand.rotation.z = -c1.angle + 0.045;
 
