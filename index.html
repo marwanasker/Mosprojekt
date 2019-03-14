@@ -18,8 +18,11 @@
 			(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame
 				(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
 
+			//Set position of clock
+			var height = 1.0;
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 ); //(fov, aspect ratio,near clipping plane,far clipping plane)
+
 			var renderer = new THREE.WebGLRenderer({ antialias: true }); // the three.js renderer
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
@@ -39,13 +42,14 @@
 			clock = new THREE.Clock();
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);  // set OrbitControls
+			controls.target = new THREE.Vector3(0,height,0);
 
 			// add lightningt to the scene: hsl= hue/satuaration/lightness/level
 			var directLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'), 0.6, 0, Math.PI / 2., 0, 2);
-			directLight.position.set(0, 100, 200);
+			directLight.position.set(30, 20, 70);
 			directLight.castShadow = true;
 
-			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.15); // soft white light
+			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.14); // soft white light
 
 			scene.add(ambientLight);
 			scene.add(directLight);
@@ -60,7 +64,6 @@
 			var objLoaderPend = new THREE.OBJLoader();
 			var objLoaderHand = new THREE.OBJLoader();
 
-
  //Anchor object & materials
 			mtlLoaderAnchor.setTexturePath('/assets/');
 			mtlLoaderAnchor.setPath('/assets/');
@@ -71,7 +74,7 @@
 				objLoaderAnchor.setPath('/assets/');
 				objLoaderAnchor.load('anchor.obj', function(AnchorObject) {
 						anchor = AnchorObject;
-						anchor.translateY(1.45947);
+						anchor.translateY(1.45947 + height);
 						anchor.translateZ(1.98);
 						anchor.rotateX(1.57079633);
 						anchor.traverse(function(child) {
@@ -96,6 +99,7 @@
 						cog.rotateZ(1.57079633);
 						cog.rotateX(1.57079633);
 						cog.translateY(2);
+						cog.translateX(height);
 						cog.traverse(function(child) {
 								if (child instanceof THREE.Mesh) {
 										child.castShadow = true;
@@ -118,7 +122,8 @@
 						pend = pendObject;
 						pend.translateZ(1.8);
 						pend.translateY(1.5);
-						pend.scale.set(0.8, 0.8, 0.8);
+						pend.translateY(height)
+						pend.scale.set(0.78, 0.78, 0.78);
 						pend.traverse(function(child) {
 								if (child instanceof THREE.Mesh) {
 										child.castShadow = true;
@@ -140,6 +145,7 @@
  					objLoaderHand.load('visare.obj', function(handObject) {
  							hand = handObject;
  							hand.translateZ(2.02);
+							hand.translateY(height);
  							hand.scale.set(0.1, 0.1, 0.1);
  							scene.add(hand);
 
@@ -148,11 +154,17 @@
 
 //Mass object & materials
 		var massGeometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.8, 32 );
-		var massMaterial = new THREE.MeshBasicMaterial( {color: 0xc0c0c0} );
+		//var massMaterial = new THREE.MeshBasicMaterial( {color: 0xc0c0c0} );
+
+		var massTexture = new THREE.TextureLoader().load( "assets/steel.jpg" );
+		var massMaterial = new THREE.MeshLambertMaterial({ map : massTexture });
 		var mass = new THREE.Mesh( massGeometry, massMaterial );
-		scene.add( mass );
+		mass.castShadow = true;
+		scene.add( mass, massMaterial );
 		mass.translateZ(1.5);
 		mass.translateX(0.3);
+		mass.translateY(height);
+		mass.rotateX(3.14);
 
 //Watch face
 		var faceGeometry = new THREE.PlaneGeometry(1.75, 1.75);
@@ -162,6 +174,7 @@
 		var watchFace = new THREE.Mesh( faceGeometry, faceMaterial );
 		scene.add(watchFace);
 		watchFace.translateZ(2.01);
+		watchFace.translateY(height);
 
 //Floor and wall geometry
 			var floorGeometry = new THREE.PlaneBufferGeometry( 30, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
@@ -195,6 +208,7 @@
 			mouldingTexture.wrapT = THREE.RepeatWrapping;
 			mouldingTexture.repeat.set( 16, 1 );
 		var moulding = new THREE.Mesh(mouldingGeometry, mouldingMaterial);
+		moulding.receiveShadow = true;
 		scene.add(moulding);
 		moulding.translateZ(0.01);
 		moulding.translateY(-6.6);
@@ -226,9 +240,9 @@
 			time.start;
 			var lastTime;
 
-			var p1 = new Pendulum(-0.1, 0, 1, 10, 1, 0.04, 10);
-			var c1 = new Cog(0, 0, 0.8);
-			var m1 = new Mass(1, -2, 0.11, -4.2);
+			var p1 = new Pendulum(-0.11, 0, 5, 1, 0.1, 0.45, 0.04);
+			var c1 = new Cog(0.2, 2);
+			var m1 = new Mass(0.2, -2, 0.05, -4.2);
 
 			var thisUpdate = 0;
 			var lastUpdate = 0;
@@ -242,8 +256,9 @@
 
 			function updateAngle(){
 				thisUpdate = time.getElapsedTime();
-				var numUpdates = Math.floor((thisUpdate - lastUpdate) / h);
+				var numUpdates = Math.round((thisUpdate - lastUpdate) / h);
 				//console.log(numUpdates);
+
 				lastUpdate = thisUpdate;
 
 
@@ -251,7 +266,7 @@
 					memberberry = prevPenAngle;
 					prevPenAngle = p1.angle;
 
-					p1.update(c1.acceleration);
+					p1.update(c1.acceleration, c1.radius);
 
 					var offset = 0.0666; //Förskjuter var kugghjulet stannar varje tick
 					if(modulus(c1.angle + offset, Math.PI/30) < 0.05 && Math.abs(p1.angle) > contactAngle) {
@@ -301,7 +316,7 @@
 
 			animate(); // call the render loop
 		</script>
-			<svg id="plot" height="300" width="500" style="z-index:20000; position: absolute; right:0; bottom:0; background-color: rgba(0,0,0,0.2);"></svg>
+			<svg id="plot" height="100" width="180" style="z-index:20000; position: absolute; right:0; bottom:0; background-color: rgba(0,0,0,0.2);"></svg>
 	</body>
 </html>
 l

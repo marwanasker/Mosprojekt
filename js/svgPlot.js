@@ -34,9 +34,9 @@ function plotArray(plot, array, color) {
   for (i = 0; i < array.length - 1; i++) {
 
     x1 = i*(width/array.length);
-    y1 = height - array[i]*300;
+    y1 = height - array[i]*100;
     x2 = (i+1)*(width/array.length);
-    y2 = height - array[i+1]*300;
+    y2 = height - array[i+1]*100;
 
     plot.appendChild(line(x1, y1, x2, y2, color));
   }
