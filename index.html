@@ -49,6 +49,8 @@
 			directLight.position.set(30, 20, 70);
 			directLight.castShadow = true;
 
+			var directLight2 = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 100%)'), 0.6, 0, Math.PI / 2., 0, 2);
+
 			var ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(255, 255, 255)'), 0.14); // soft white light
 
 			scene.add(ambientLight);
@@ -177,41 +179,42 @@
 		watchFace.translateY(height);
 
 //Floor and wall geometry
-			var floorGeometry = new THREE.PlaneBufferGeometry( 30, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
+			var floorGeometry = new THREE.PlaneBufferGeometry( 30 * 1.5, 30, 32, 32 ); // create the geometry for a cube with size 1,1,1 in x,y,z, BoxGeometry contains all the vertices for a cube
 			var floorTexture = new THREE.TextureLoader().load( "assets/wood_floor.jpg" );
 			var floorMaterial = new THREE.MeshLambertMaterial({ map : floorTexture }); // create a material to color the cube
 				floorTexture.wrapS = THREE.RepeatWrapping;
 				floorTexture.wrapT = THREE.RepeatWrapping;
-				floorTexture.repeat.set( 7, 8 );
+				floorTexture.repeat.set( 7 * 1.5, 8 );
 			var floor = new THREE.Mesh( floorGeometry, floorMaterial ); // create a mesh, a mesh is an objects that takes a geometry and applies a material to it/
 
-			var wallGeometry = new THREE.PlaneBufferGeometry(30, 30, 32, 32);
+			var wallGeometry = new THREE.PlaneBufferGeometry(30 * 1.5, 30, 32, 32);
 			var wallTexture = new THREE.TextureLoader().load( "assets/victorian_wallpaper.jpg" );
 				wallTexture.wrapS = THREE.RepeatWrapping;
 				wallTexture.wrapT = THREE.RepeatWrapping;
-				wallTexture.repeat.set( 14, 16 );
+				wallTexture.repeat.set( 14 * 1.5, 16 );
 			var wallMaterial = new THREE.MeshLambertMaterial({ map : wallTexture });
 			var wall = new THREE.Mesh(wallGeometry, wallMaterial);
 			floor.rotateX(-Math.PI/2);
 			floor.translateZ(-7);
-			floor.translateY(-0.85);
+			floor.translateY(-15)
 			floor.receiveShadow = true;
 			wall.receiveShadow = true;
 			scene.add(floor); // add the cube mesh to the scene we will be rendering
 			scene.add(wall);
 
 	//Moulding geometry
-		var mouldingGeometry = new THREE.PlaneBufferGeometry(30, 1);
+		var mouldingGeometry = new THREE.PlaneBufferGeometry(30 * 1.5, 1);
 		var mouldingTexture = new THREE.TextureLoader().load( "assets/moulding.jpg" );
 		var mouldingMaterial = new THREE.MeshLambertMaterial({ map : mouldingTexture });
 			mouldingTexture.wrapS = THREE.RepeatWrapping;
 			mouldingTexture.wrapT = THREE.RepeatWrapping;
-			mouldingTexture.repeat.set( 16, 1 );
+			mouldingTexture.repeat.set( 16 * 1.5, 1 );
 		var moulding = new THREE.Mesh(mouldingGeometry, mouldingMaterial);
 		moulding.receiveShadow = true;
 		scene.add(moulding);
 		moulding.translateZ(0.01);
 		moulding.translateY(-6.6);
+
 
 	//Painting geometry
 		var paintingGeometry = new THREE.PlaneBufferGeometry( 4, 5 );
